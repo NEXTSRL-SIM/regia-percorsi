@@ -95,14 +95,15 @@ textarea{flex:1;min-height:220px;resize:none}
   </div>
   <div id="vGen">
     <p class="occhio" style="margin-bottom:12px">Ogni riga collega una campagna a un percorso, e il percorso alla regia. Ogni percorso porta con sé la sua conoscenza per l'operatore: scegliendo il percorso, l'operatore sa già cosa ha visto il cliente. Una campagna senza percorso: i contatti arrivano e si fermano lì.</p>
+    <div class="riga" style="margin-bottom:10px"><span class="et">Campagne Facebook</span><button class="chip" id="aAttive" aria-pressed="false">solo attive</button><button class="chip" id="aTutte" aria-pressed="true">tutte</button><span class="et" id="aConta" style="margin-left:8px"></span></div>
     <div class="assegna" id="assegna"></div>
     <button class="bott forte" id="bNuova" style="margin-top:12px">+ Nuova assegnazione</button>
   </div>
   <div id="vDett" class="nascosto">
   <div class="riga">
     <span class="et">Campagne</span>
-    <button class="chip" id="fAttive" aria-pressed="true">attive</button>
-    <button class="chip" id="fTutte" aria-pressed="false">tutte</button>
+    <button class="chip" id="fAttive" aria-pressed="false">attive su Facebook</button>
+    <button class="chip" id="fTutte" aria-pressed="true">tutte</button>
   </div>
   <div class="campagne" id="campagne"></div>
   <div class="riga" style="margin-top:4px">
@@ -132,13 +133,20 @@ var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){re
 function grassetti(t){return String(t||"").split("*").map(function(x,i){return i%2?"<b>"+esc(x)+"</b>":esc(x);}).join("");}
 var $=function(id){return document.getElementById(id);};
 
-var CAMPAGNE=[
- {id:"v1",nome:"Video 1 · Piccolo o grande?",stato:"attiva",percorso:"001",img:IMG.camp,testo:"[testo dell'inserzione: ancora da scrivere]",
-  info:"Video di Valentino, 37 secondi · Facebook e Instagram · 50 euro al giorno per una settimana",
-  dice:"«Le hanno preventivato sei chilowatt, con un accumulo da dieci? Aspetti... prima di firmare.»\n«Meglio dodici moduli oppure venti?»\n«Da dodici a venti moduli: con la promozione Next il prezzo non cambia. E vale anche con l'accumulo da sedici.»"},
- {id:"p2",nome:"Pillola 2 · Perché il grande costa uguale",stato:"pronta, non pubblicata",percorso:null,img:null,testo:"[testo dell'inserzione]",info:"Video di Valentino, 31 secondi"},
- {id:"p3",nome:"Pillola 3 · Rende di più",stato:"pronta, non pubblicata",percorso:null,img:null,testo:"[testo dell'inserzione]",info:"Video di Valentino"}
-];
+var V1={info:"Video di Valentino, 37 secondi · Facebook e Instagram",testo:"[testo dell'inserzione: da leggere da Facebook]",
+  dice:"«Le hanno preventivato sei chilowatt, con un accumulo da dieci? Aspetti... prima di firmare.»\n«Meglio dodici moduli oppure venti?»\n«Da dodici a venti moduli: con la promozione Next il prezzo non cambia. E vale anche con l'accumulo da sedici.»"};
+// le campagne arrivano da Facebook (edge regia-campagne): nome e stato veri
+var CAMPAGNE=[{id:"_",nome:"carico le campagne da Facebook…",stato:"",attiva:false,percorso:null,img:null,testo:"",info:""}];
+function caricaCampagne(){
+  fetch("https://pnxhthrheqeucoisifjw.supabase.co/functions/v1/regia-campagne").then(function(r){return r.json();}).then(function(j){
+    if(!j.ok)throw new Error(j.errore);
+    CAMPAGNE=j.campagne.map(function(c){var v=/piccolo o grande/i.test(c.nome);var a=ASS.filter(function(x){return x.camp===c.id;})[0];
+      return {id:c.id,nome:c.nome,stato:c.attiva?"attiva":(c.stato==="PAUSED"?"in pausa":String(c.stato||"").toLowerCase()),attiva:c.attiva,creata:(c.creata||"").slice(0,10),percorso:a?a.perc:null,img:v?IMG.camp:null,testo:v?V1.testo:"[testo dell'inserzione: da leggere da Facebook]",info:(v?V1.info+" · ":"")+(c.attiva?"attiva":"in pausa")+" su Facebook",dice:v?V1.dice:null};});
+    if(!ASS.length||ASS[0].camp==="_"){var v1=CAMPAGNE.filter(function(c){return /piccolo o grande/i.test(c.nome);})[0];ASS=v1?[{camp:v1.id,perc:"001",op:"Valentino"}]:[];if(v1)v1.percorso="001";}
+    if(!CAMPAGNE.some(function(c){return c.id===S.camp;}))S.camp=(ASS[0]||{}).camp||CAMPAGNE[0].id;
+    disegna();
+  }).catch(function(e){CAMPAGNE=[{id:"_",nome:"Facebook non risponde: "+String(e.message||e),stato:"",attiva:false,percorso:null,img:null,testo:"",info:""}];disegna();});
+}
 var PERCORSI=[{cod:"001",nome:"FB-PROMO-NOV",stato:"attivo",conoscenza:"Promo novembre: video «Piccolo o grande?», 30 case, offerta A o B, fino al 30 novembre"}];
 var OPERATORI=["Valentino","Roberto Polotto","Alessandro Belloni"];
 var CONF=[[IMG.c1,"Passo 1 · il comune"],[IMG.c2,"Passo 2 · la via e il civico"],[IMG.c3,"Passo 3 · la croce sul tetto"],[IMG.c3b,"Passo 3 · contorna la falda"],[IMG.c3c,"Passo 3 · gli angoli della falda"],[IMG.c3d,"Passo 3 · falda contornata"],[IMG.c4,"Passo 4 · i consumi"],[IMG.c5,"Passo 5 · riscaldamento e acqua calda"],[IMG.c6,"Fine · grazie, registrazione completata"]];
@@ -187,7 +195,7 @@ var NODI_MW=[ {id:"W4",x:1010,y:W,tipo:"TEMPLATE",nome:"Ricevuta su WhatsApp",qu
 NODI=NODI.concat(NODI_MW);
 var REGIA={id:"R",tipo:"REGIA",nome:"Istruzioni per il commerciale",nota:true,corpo:"[qui scrivi le istruzioni che il commerciale legge per i contatti di questa campagna: cosa hanno visto nel video, che promozione, come aprire la telefonata]",perche:"Il commerciale le legge prima di chiamare."};
 
-var S={filtro:"attive",camp:"v1",perc:"001",i:-1,mod:false,dev:"tel",pg:0,prova:false,testi:{},oggetti:{},teste:{},piedi:{},btn:{}};
+var S={filtro:"tutte",camp:"_",perc:"001",i:-1,mod:false,dev:"tel",pg:0,prova:false,testi:{},oggetti:{},teste:{},piedi:{},btn:{}};
 function testaDi(x){return S.teste[x.id]!==undefined?S.teste[x.id]:(x.testa||"");}
 function piedeDi(x){return S.piedi[x.id]!==undefined?S.piedi[x.id]:(x.mail||x.doc||x.annuncio||x.nota||x.pagine?"":PIEDE);}
 function bottoniDi(x){if(S.btn[x.id])return S.btn[x.id];return (x.bottoni||[]).map(function(t){return {t:t,tipo:x.tipo==="TEMPLATE"?"risposta":"link"};});}
@@ -200,8 +208,8 @@ function tutti(){return [nodoCamp()].concat(collegata()?NODI:[]).concat([REGIA])
 
 function disegnaCampagne(){
   $("fAttive").setAttribute("aria-pressed",S.filtro==="attive");$("fTutte").setAttribute("aria-pressed",S.filtro==="tutte");
-  var l=CAMPAGNE.filter(function(c){return S.filtro==="tutte"||c.stato==="attiva";});
-  $("campagne").innerHTML=l.map(function(c){return '<button class="camp" data-c="'+c.id+'" aria-pressed="'+(c.id===S.camp)+'"><span class="th">'+(c.img?'<img src="'+c.img+'" alt="">':'video')+'</span><span style="min-width:0"><b>'+esc(c.nome)+'</b><span>'+esc(c.stato)+' · '+(c.percorso?'percorso '+c.percorso:'nessun percorso')+'</span></span></button>';}).join("");
+  var l=CAMPAGNE.filter(function(c){return S.filtro==="tutte"||c.attiva||c.id===S.camp;});
+  $("campagne").innerHTML=l.map(function(c){return '<button class="camp" data-c="'+c.id+'" aria-pressed="'+(c.id===S.camp)+'"><span class="th">'+(c.img?'<img src="'+c.img+'" alt="">':'FB')+'</span><span style="min-width:0"><b>'+esc(c.nome)+'</b><span>'+esc(c.stato)+' · '+(c.percorso?'percorso '+c.percorso:'nessun percorso')+'</span></span></button>';}).join("");
   var sel=$("percorso");sel.innerHTML=PERCORSI.map(function(p){return '<option value="'+p.cod+'">'+p.cod+' · '+esc(p.nome)+'</option>';}).join("")+'<option value="">— nessun percorso</option>';
   sel.value=S.perc||"";
   $("statoPerc").textContent=collegata()?"collegato · attivo":"non collegato";
@@ -372,12 +380,15 @@ $("scheda").addEventListener("click",function(e){var b=e.target.closest("button"
 });
 function tema(){try{var t=window.parent&&window.parent!==window?window.parent.document.documentElement.getAttribute("data-tema"):null;if(!t){t=new URLSearchParams(location.search).get("tema");}document.documentElement.setAttribute("data-tema",t==="chiaro"?"chiaro":"scuro");}catch(e){}}
 window.addEventListener("focus",tema);setInterval(tema,3000);
-var ASS=[{camp:"v1",perc:"001",op:"Valentino"}];
+var ASS=[{camp:"_",perc:"001",op:"Valentino"}];
 var VISTA="gen";
-function opzCamp(sel){return CAMPAGNE.map(function(c){return '<option value="'+c.id+'"'+(c.id===sel?" selected":"")+'>'+esc(c.nome)+' · '+esc(c.stato)+'</option>';}).join("");}
+function opzCamp(sel){return CAMPAGNE.filter(function(c){return S.filtro==="tutte"||c.attiva||c.id===sel;}).map(function(c){return '<option value="'+c.id+'"'+(c.id===sel?" selected":"")+'>'+esc(c.nome)+' · '+esc(c.stato)+'</option>';}).join("");}
+$("aAttive").onclick=function(){S.filtro="attive";disegna();};$("aTutte").onclick=function(){S.filtro="tutte";disegna();};
 function opzPerc(sel){return '<option value=""'+(!sel?" selected":"")+'>— nessun percorso</option>'+PERCORSI.map(function(p){return '<option value="'+p.cod+'"'+(p.cod===sel?" selected":"")+'>'+p.cod+' · '+esc(p.nome)+'</option>';}).join("");}
 function conoscenzaDi(c){var p=PERCORSI.filter(function(x){return x.cod===c;})[0];return p?p.conoscenza:"";}
 function disegnaAss(){
+  $("aAttive").setAttribute("aria-pressed",S.filtro==="attive");$("aTutte").setAttribute("aria-pressed",S.filtro==="tutte");
+  $("aConta").textContent=CAMPAGNE[0]&&CAMPAGNE[0].id!=="_"?(CAMPAGNE.length+" campagne, "+CAMPAGNE.filter(function(c){return c.attiva;}).length+" attive"):"";
   $("assegna").innerHTML=ASS.map(function(a,i){return '<div class="ass"><select data-ac="'+i+'" aria-label="Campagna">'+opzCamp(a.camp)+'</select><span class="fr" aria-hidden="true">→</span><select data-ap="'+i+'" aria-label="Percorso">'+opzPerc(a.perc)+'</select><span class="fr" aria-hidden="true">→</span>'+(a.perc?'<span class="regcella"><select data-ao="'+i+'" aria-label="Operatore della regia">'+OPERATORI.map(function(o){return '<option'+(o===a.op?" selected":"")+'>Regia · '+esc(o)+'</option>';}).join("")+'</select><span class="con">conoscenza: '+esc(conoscenzaDi(a.perc))+'</span></span>':'<span class="fermo">si ferma qui</span>')+'<button class="bott" data-espandi="'+i+'" '+(a.camp?"":"disabled")+'>Apri il percorso ›</button></div>';}).join("");
 }
 $("assegna").addEventListener("change",function(e){var t=e.target;if(t.dataset.ac!==undefined){ASS[+t.dataset.ac].camp=t.value;}if(t.dataset.ap!==undefined){ASS[+t.dataset.ap].perc=t.value;}if(t.dataset.ao!==undefined){ASS[+t.dataset.ao].op=t.value.replace("Regia · ","");}disegnaAss();});
@@ -386,5 +397,5 @@ $("bNuova").onclick=function(){var usate=ASS.map(function(a){return a.camp;});va
 function vista(v){VISTA=v;$("tGen").setAttribute("aria-selected",v==="gen");$("tDett").setAttribute("aria-selected",v==="dett");$("vGen").classList.toggle("nascosto",v!=="gen");$("vDett").classList.toggle("nascosto",v!=="dett");$("tela").classList.toggle("nascosto",v!=="dett");disegna();}
 $("tGen").onclick=function(){vista("gen");};$("tDett").onclick=function(){vista("dett");};
 function disegna(){tema();disegnaAss();disegnaCampagne();disegnaFlusso();}
-disegna();
+disegna();caricaCampagne();
 </script></body></html>
