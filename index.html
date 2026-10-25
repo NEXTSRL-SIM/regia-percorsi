@@ -31,7 +31,7 @@ select{background:var(--surface);border:1px solid var(--line-2);color:var(--ink)
 .legenda{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--ink-3);margin-left:auto;flex-wrap:wrap}
 .tipo{font-size:10px;font-weight:700;letter-spacing:.05em;padding:3px 7px;border-radius:999px;white-space:nowrap}
 .tela{overflow:auto;border-top:1px solid var(--line);margin-top:10px}
-.flusso{position:relative;width:3210px;height:890px}
+.flusso{position:relative;width:3210px;height:1120px}
 .banda{position:absolute;left:0;width:2940px}
 .lab{position:absolute;left:24px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
 .nodo{position:absolute;width:190px;background:#fff;border:1.5px solid #c9d2d9;border-radius:12px;color:#111b21;box-shadow:0 1px 2px rgba(17,27,33,.08)}
@@ -176,9 +176,21 @@ var NODI=[
  {id:"M10",x:2450,y:M,tipo:"MAIL",nome:"Promemoria della mattina",quando:"la mattina della telefonata",mail:true,daAttivare:true,wa:true,oggetto:"Oggi alle 14:00 la chiamiamo",titolo:"Promemoria",sotto:"Oggi · ore 14:00",corpo:"Buongiorno Sante, le ricordiamo che oggi alle 14:00 la chiama il nostro tecnico commerciale dal numero 0421 189 8067, per le ultime due domande sul suo preventivo.\n\nTenga a portata di mano le bollette di luce e gas e la visura catastale dell'immobile.",bottone:"Devo spostarla",perche:"Parte anche su WhatsApp."},
  {id:"M11",x:2690,y:M,tipo:"MAIL",nome:"Promemoria un'ora prima",quando:"un'ora prima",mail:true,daAttivare:true,wa:true,oggetto:"Tra un'ora la chiamiamo",titolo:"Tra un'ora la chiamiamo",sotto:"Ore 14:00",corpo:"Gentile Sante, tra un'ora, alle 14:00, la chiama il nostro tecnico commerciale dal numero 0421 189 8067. A tra poco!",perche:"Parte anche su WhatsApp."}
 ];
+var W=860;
+var NODI_MW=[ {id:"W4",x:1010,y:W,tipo:"TEMPLATE",nome:"Ricevuta su WhatsApp",quando:"con la mail del grazie",daAttivare:true,modello:"lead_ricevuta (da approvare)",img:IMG.ric,doc:true,file:"Next - ricevuta della configurazione.pdf",corpo:"Grazie Sante, abbiamo ricevuto la sua configurazione. In allegato trova la ricevuta con i dati che ci ha indicato.\nStiamo analizzando il suo tetto: *entro 5 minuti le mandiamo l'esito della verifica*.",perche:"Chi arriva dalla mail non ha la chat aperta: serve il template, con il PDF in testa."},
+ {id:"W6",x:1490,y:W,tipo:"TEMPLATE",nome:"Esito su WhatsApp",quando:"con la mail dell'esito",daAttivare:true,modello:"lead_esito_a / lead_esito_b (da approvare)",testa:"Il suo tetto ha superato la verifica",corpo:"Sante, abbiamo verificato il tetto che ci ha indicato: *ci stanno fino a circa 25 moduli*. Il numero esatto lo confermiamo dopo un breve colloquio senza impegno e con il sopralluogo.\nIn base ai suoi consumi può scegliere un impianto da 6 kWp con batteria da 10 kWh. Ma il suo tetto ha i requisiti per entrare *tra le 30 case* della promozione di novembre: *allo stesso prezzo, un impianto da 9,84 kWp con 24 moduli Longi, batteria da 16 kWh e sistema di backup inclusi*.\nSe preferisce moduli di potenza diversa, abbiamo anche soluzioni da *490*, *520* e *540 Wp*.\nLa promozione vale fino al 30 novembre o fino all'esaurimento dei 30 posti.",bottoni:["Vedi la proposta"],promo:"30 case · offerta A o B · 30 novembre",perche:"Stesso esito della mail, come template perché la chat può essere chiusa."},
+ {id:"W8",x:1970,y:W,tipo:"TEMPLATE",nome:"Telefonata fissata su WhatsApp",quando:"con la mail della conferma",daAttivare:true,modello:"lead_telefonata_fissata3 (da approvare)",testa:"Telefonata fissata",corpo:"Grazie Sante, la telefonata con il nostro tecnico commerciale è fissata per martedì 27 ottobre alle 14:00. La chiamiamo dal numero 0421 189 8067.\nLa promozione è bloccata per lei, senza impegno, fino al 30 novembre.\nTenga a portata di mano una copia delle bollette di luce e gas e la visura catastale dell'immobile.\nLe manderemo un promemoria qui su WhatsApp la mattina del giorno della telefonata e un'ora prima.\nDopo il colloquio riceverà il preventivo entro la giornata.",bottoni:["Devo spostarla"],perche:"Versione che non promette il preventivo «via mail»: vale anche per chi non ci ha lasciato la mail."},
+ {id:"W9",x:2210,y:W,tipo:"TEMPLATE",nome:"Proposta PDF su WhatsApp",quando:"con la mail della proposta",daAttivare:true,modello:"lead_proposta (da approvare)",img:IMG.prop,doc:true,file:"Next - verifica del tetto e proposta.pdf",corpo:"Gentile Sante, in allegato trova la verifica del suo tetto e la proposta per il suo impianto fotovoltaico.",perche:"Il PDF non viaggia mai da solo: sempre con il suo testo."},
+ {id:"W10",x:2450,y:W,tipo:"TEMPLATE",nome:"Promemoria della mattina",quando:"con la mail del promemoria",daAttivare:true,modello:"lead_promemoria_mattina",testa:"Promemoria",corpo:"Buongiorno Sante, le ricordiamo che oggi alle 14:00 la chiama il nostro tecnico commerciale dal numero 0421 189 8067, per le ultime due domande sul suo preventivo.\n\nTenga a portata di mano le bollette di luce e gas e la visura catastale dell'immobile.",bottoni:["Devo spostarla"],perche:"Lo stesso template della corsia WhatsApp."},
+ {id:"W11",x:2690,y:W,tipo:"TEMPLATE",nome:"Promemoria un'ora prima",quando:"con la mail di un'ora prima",daAttivare:true,modello:"lead_promemoria_ora",corpo:"Gentile Sante, tra un'ora, alle 14:00, la chiama il nostro tecnico commerciale dal numero 0421 189 8067. A tra poco!",perche:"Lo stesso template della corsia WhatsApp."}
+];
+NODI=NODI.concat(NODI_MW);
 var REGIA={id:"R",tipo:"REGIA",nome:"Istruzioni per il commerciale",nota:true,corpo:"[qui scrivi le istruzioni che il commerciale legge per i contatti di questa campagna: cosa hanno visto nel video, che promozione, come aprire la telefonata]",perche:"Il commerciale le legge prima di chiamare."};
 
-var S={filtro:"attive",camp:"v1",perc:"001",i:-1,mod:false,dev:"tel",pg:0,prova:false,testi:{},oggetti:{}};
+var S={filtro:"attive",camp:"v1",perc:"001",i:-1,mod:false,dev:"tel",pg:0,prova:false,testi:{},oggetti:{},teste:{},piedi:{},btn:{}};
+function testaDi(x){return S.teste[x.id]!==undefined?S.teste[x.id]:(x.testa||"");}
+function piedeDi(x){return S.piedi[x.id]!==undefined?S.piedi[x.id]:(x.mail||x.doc||x.annuncio||x.nota||x.pagine?"":PIEDE);}
+function bottoniDi(x){if(S.btn[x.id])return S.btn[x.id];return (x.bottoni||[]).map(function(t){return {t:t,tipo:x.tipo==="TEMPLATE"?"risposta":"link"};});}
 function campagna(){return CAMPAGNE.filter(function(c){return c.id===S.camp;})[0]||CAMPAGNE[0];}
 function collegata(){return S.perc==="001";}
 function testoDi(x){return S.testi[x.id]!==undefined?S.testi[x.id]:(x.corpo||"");}
@@ -217,12 +229,11 @@ function cartaNodo(x,idx){
    '<button class="matita" data-m="'+idx+'" aria-label="Modifica '+esc(x.nome)+'" title="Modifica">'+ICO_MATITA+'</button>';
   if(x.pulsante&&x.bottoni){var r=x.tipo==="TEMPLATE";h+='<div class="pulsante">'+(r?ICO_RISP:ICO_LINK)+'<span class="t" title="'+(r?"Pulsante risposta: fa partire il messaggio collegato":"Pulsante link: apre la pagina collegata")+'">'+esc(x.bottoni[0])+'</span><span class="porta" aria-hidden="true"></span></div>';}
   h+='</div>';
-  if(x.wa)h+='<span class="pill" style="left:'+x.x+'px;top:'+(x.y+216)+'px">+ anche su WhatsApp</span>';
   return h;
 }
 function frecce(){
   var p=function(d,o){o=o||{};return '<path d="'+d+'" fill="none" stroke="'+(o.c||"#7b8a94")+'" stroke-width="2"'+(o.t?' stroke-dasharray="6 5"':'')+' marker-end="url(#'+(o.c?"fb":"fr")+')"/>';};
-  var s='<svg aria-hidden="true" width="3210" height="890" style="position:absolute;left:0;top:0"><defs><marker id="fr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7b8a94"/></marker><marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#027eb5"/></marker></defs>';
+  var s='<svg aria-hidden="true" width="3210" height="1120" style="position:absolute;left:0;top:0"><defs><marker id="fr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7b8a94"/></marker><marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#027eb5"/></marker></defs>';
   s+=p("M220,420 C255,420 255,135 288,135")+p("M220,420 C255,420 255,705 288,705");
   s+=p("M488,261 C512,261 505,135 528,135",{c:"#027eb5"});
   [[720,768],[960,1008],[1200,1248],[1440,1488],[1680,1728],[1920,1968],[2160,2208],[2400,2448],[2640,2688]].forEach(function(a){s+=p("M"+a[0]+",135 H"+a[1]);});
@@ -230,12 +241,14 @@ function frecce(){
   s+=p("M1920,135 C1945,135 1945,415 1968,415",{t:1})+p("M2545,240 V308",{t:1});
   [[480,768],[960,1008],[1200,1488],[1680,1728],[1920,1968],[2160,2208],[2400,2448],[2640,2688]].forEach(function(a){s+=p("M"+a[0]+",705 H"+a[1]);});
   s+=p("M2880,705 C2920,705 2920,420 2958,420");
+  [1010,1490,1970,2210,2450,2690].forEach(function(xx){s+=p("M"+(xx+95)+",812 V858",{t:1});});
   return s+'</svg>';
 }
 function disegnaFlusso(){
   var c=campagna(),T=tutti(),h='';
   h+='<div class="banda" style="top:0;height:580px;background:#e9f6ee"></div><div class="banda" style="top:590px;height:290px;background:#e9f1fa"></div>';
-  h+='<div class="lab" style="top:8px;color:#0f6b3a">Corsia WhatsApp</div><div class="lab" style="top:598px;color:#1a5b94">Corsia mail</div>';
+  h+='<div class="banda" style="top:830px;height:280px;background:#e9f6ee"></div>';
+  h+='<div class="lab" style="top:8px;color:#0f6b3a">Corsia WhatsApp</div><div class="lab" style="top:598px;color:#1a5b94">Corsia mail</div><div class="lab" style="top:838px;color:#0f6b3a">WhatsApp che parte insieme alla mail</div>';
   if(collegata()){
     h+=frecce();
     h+='<span class="nota" style="left:1925px;top:290px;width:42px">non fissa</span><span class="nota" style="left:2556px;top:262px">tocca «Devo spostarla»</span><span class="nota" style="left:2172px;top:400px;width:190px">dopo: ancora da costruire</span><span class="nota" style="left:500px;top:675px;width:250px;text-align:center">dal pulsante della mail, direttamente</span><span class="nota" style="left:1210px;top:675px;width:270px;text-align:center">ricevuta allegata alla mail del grazie</span>';
@@ -264,15 +277,15 @@ function mailHtml(x,larga){
   return h;
 }
 function chatHtml(x){
-  var corpo=testoDi(x)+(x.tipo==="LIBERO"&&x.bottoni?"\n⠀":"");
+  var corpo=testoDi(x)+(x.tipo==="LIBERO"&&bottoniDi(x).length?"\n⠀":"");
   var h='<div style="background:#075e54;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;flex:none"><span style="width:34px;height:34px;border-radius:999px;background:#128c4b;display:inline-flex;align-items:center;justify-content:center;font-weight:700">N</span><span><b style="font-size:14px;display:block">Next S.r.l.</b><span style="font-size:11px;opacity:.85">account aziendale</span></span></div>';
   h+='<div style="flex:1;overflow:auto;padding:14px 10px 14px 16px;display:flex;flex-direction:column;background:#efeae2"><div class="wbolla"><div style="padding:7px 9px 6px;display:flex;flex-direction:column;gap:5px">';
   if(x.doc)h+='<div style="border-radius:7px;overflow:hidden;background:#f0f2f5"><img src="'+x.img+'" alt="Anteprima del PDF" style="width:100%;display:block"><div style="padding:7px 9px;font-size:12.5px;display:flex;gap:6px;align-items:center"><span style="background:#e2483d;color:#fff;font-size:9px;font-weight:700;padding:2px 4px;border-radius:3px">PDF</span>'+esc(x.file)+'</div></div>';
-  if(x.testa)h+='<b style="font-size:14px">'+esc(x.testa)+'</b>';
+  if(testaDi(x))h+='<b style="font-size:14px">'+esc(testaDi(x))+'</b>';
   if(testoDi(x))h+='<div style="font-size:13.5px;line-height:1.42;white-space:pre-wrap">'+grassetti(corpo)+'</div>';
-  if(!x.doc)h+='<span style="font-size:11.5px;color:#8696a0">'+PIEDE+'</span>';
+  if(piedeDi(x))h+='<span style="font-size:11.5px;color:#8696a0">'+esc(piedeDi(x))+'</span>';
   h+='<span style="align-self:flex-end;font-size:10.5px;color:#8696a0;margin-top:-2px">16:23</span></div>';
-  (x.bottoni||[]).forEach(function(t){h+='<div class="wbtn">'+(x.tipo==="TEMPLATE"?ICO_RISP:ICO_LINK)+'<span>'+esc(t)+'</span></div>';});
+  bottoniDi(x).forEach(function(q){h+='<div class="wbtn">'+(q.tipo==="risposta"?ICO_RISP:ICO_LINK)+'<span>'+esc(q.t||"[testo del pulsante]")+'</span></div>';});
   return h+'</div></div>';
 }
 function annuncioHtml(x,pc){
@@ -316,7 +329,19 @@ function apri(){
   if(!S.mod)dx+='<div style="display:flex;flex-direction:column;gap:9px;overflow:auto">'+campi.map(function(f){return '<div class="campo"><div class="a">'+esc(f.k)+'</div><div class="b">'+esc(f.v)+'</div></div>';}).join("")+'</div>';
   else{dx+='<div style="display:flex;flex-direction:column;gap:10px;flex:1;min-height:0">';
     if(x.mail)dx+='<label for="ogg" style="font-size:13px;font-weight:600">Oggetto della mail</label><input class="ogg" id="ogg" type="text" value="'+esc(oggettoDi(x))+'">';
-    if(x.corpo)dx+='<label for="testo" style="font-size:13px;font-weight:600">'+(x.tipo==="CAMPAGNA"?"Testo dell'inserzione":x.tipo==="REGIA"?"Istruzioni per il commerciale":x.mail?"Testo della mail":"Testo del messaggio")+'</label><textarea id="testo">'+esc(testoDi(x))+'</textarea><div style="font-size:12.5px;color:#54656f">Qui c\'è il testo che parte oggi. Le parole tra asterischi escono in grassetto; l\'anteprima cambia mentre scrivi.</div>';
+    var msg=(x.tipo==="TEMPLATE"||x.tipo==="LIBERO");
+    if(msg){dx+='<div style="overflow:auto;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">';
+      dx+='<label for="tTesta" style="font-size:13px;font-weight:600">Titolo <span style="font-weight:400;color:#54656f">(facoltativo, in grassetto sopra il testo)</span></label><input class="ogg" id="tTesta" type="text" maxlength="60" value="'+esc(testaDi(x))+'">';
+      dx+='<label for="testo" style="font-size:13px;font-weight:600">Testo <span style="font-weight:400;color:#54656f">(le parole tra *asterischi* escono in grassetto)</span></label><textarea id="testo" style="min-height:240px;flex:none">'+esc(testoDi(x))+'</textarea>';
+      dx+='<label for="tPiede" style="font-size:13px;font-weight:600">Piè di pagina <span style="font-weight:400;color:#54656f">(facoltativo, in grigio sotto il testo)</span></label><input class="ogg" id="tPiede" type="text" maxlength="60" value="'+esc(piedeDi(x))+'">';
+      var bl=bottoniDi(x);
+      dx+='<div style="font-size:13px;font-weight:600">Pulsanti</div>';
+      bl.forEach(function(q,k){dx+='<div style="display:flex;gap:8px;align-items:center"><input class="ogg" id="bt'+k+'" data-bt="'+k+'" type="text" maxlength="25" value="'+esc(q.t)+'" aria-label="Testo del pulsante '+(k+1)+'" style="flex:1"><select data-btt="'+k+'" aria-label="Tipo del pulsante '+(k+1)+'" style="min-width:0;background:#fff;color:#111b21;border:1.5px solid #c9d2d9;border-radius:10px;padding:10px;font:14px Inter,var(--sans)"><option value="risposta"'+(q.tipo==="risposta"?" selected":"")+'>↩ Risposta: fa partire un messaggio</option><option value="link"'+(q.tipo==="link"?" selected":"")+'>↗ Link: apre una pagina</option></select><button class="nav" data-btx="'+k+'" aria-label="Togli il pulsante '+(k+1)+'" style="min-height:40px;padding:0 12px">✕</button></div>';});
+      var reg=(x.tipo==="LIBERO")?"Messaggio libero: fino a 3 pulsanti di risposta oppure 1 solo link, non insieme.":"Template: fino a 10 pulsanti tra risposte e link; aggiungerne, toglierne o cambiarli richiede una nuova approvazione di Meta.";
+      var link=bl.filter(function(q){return q.tipo==="link";}).length,risp=bl.length-link,errore="";
+      if(x.tipo==="LIBERO"&&((link&&risp)||link>1||risp>3))errore="Così WhatsApp non lo accetta. "+reg;
+      dx+='<button class="nav" data-bta="1" style="align-self:flex-start"'+((x.tipo==="LIBERO"&&bl.length>=3)||bl.length>=10?" disabled":"")+'>+ Aggiungi pulsante</button><div style="font-size:12px;color:'+(errore?"#b91c1c":"#54656f")+'">'+esc(errore||reg)+'</div></div>';}
+    else if(x.corpo)dx+='<label for="testo" style="font-size:13px;font-weight:600">'+(x.tipo==="CAMPAGNA"?"Testo dell'inserzione":x.tipo==="REGIA"?"Istruzioni per il commerciale":x.mail?"Testo della mail":"Testo del messaggio")+'</label><textarea id="testo">'+esc(testoDi(x))+'</textarea><div style="font-size:12.5px;color:#54656f">Qui c\'è il testo che parte oggi. Le parole tra asterischi escono in grassetto; l\'anteprima cambia mentre scrivi.</div>';
     if(avviso)dx+='<div class="avviso">'+esc(avviso)+'</div>';
     if(x.grafica)dx+='<button class="nav" style="align-self:flex-start">Cambia la grafica della promo</button>';
     dx+='<div style="display:flex;gap:8px;margin-top:auto"><button class="nav scuro" data-salva="1">Salva in questa pagina</button><button class="nav" data-rip="1">Ripristina il testo attuale</button></div><div style="font-size:12px;color:#54656f">In questa versione di prova il salvataggio resta nella pagina: non cambia i messaggi che partono.</div></div>';}
@@ -325,6 +350,10 @@ function apri(){
   $("scheda").innerHTML=sx+dx;$("scheda").classList.remove("nascosto");$("velo").classList.remove("nascosto");
   var ta=$("testo");if(ta)ta.addEventListener("input",function(){S.testi[x.id]=this.value;aggiornaAnteprima();});
   var og=$("ogg");if(og)og.addEventListener("input",function(){S.oggetti[x.id]=this.value;aggiornaAnteprima();});
+  var tt=$("tTesta");if(tt)tt.addEventListener("input",function(){S.teste[x.id]=this.value;aggiornaAnteprima();});
+  var tp=$("tPiede");if(tp)tp.addEventListener("input",function(){S.piedi[x.id]=this.value;aggiornaAnteprima();});
+  document.querySelectorAll("[data-bt]").forEach(function(el){el.addEventListener("input",function(){var l=bottoniDi(x).map(function(q){return {t:q.t,tipo:q.tipo};});l[+el.dataset.bt].t=el.value;S.btn[x.id]=l;aggiornaAnteprima();});});
+  document.querySelectorAll("[data-btt]").forEach(function(el){el.addEventListener("change",function(){var l=bottoniDi(x).map(function(q){return {t:q.t,tipo:q.tipo};});l[+el.dataset.btt].tipo=el.value;S.btn[x.id]=l;apri();});});
 }
 function aggiornaAnteprima(){var a=document.activeElement&&document.activeElement.id,pos=document.activeElement&&document.activeElement.selectionStart;apri();if(a){var el=$(a);if(el){el.focus();try{el.setSelectionRange(pos,pos);}catch(e){}}}}
 function chiudi(){S.i=-1;S.prova=false;$("scheda").classList.add("nascosto");$("velo").classList.add("nascosto");disegnaFlusso();}
@@ -336,7 +365,9 @@ $("scheda").addEventListener("click",function(e){var b=e.target.closest("button"
   if(b.dataset.t){S.mod=b.dataset.t==="mod";return apri();}
   if(b.dataset.pg){S.pg=Math.max(0,S.pg+Number(b.dataset.pg));return apri();}
   if(b.dataset.nav){S.i+=Number(b.dataset.nav);S.pg=0;return apri();}
-  if(b.dataset.rip){var x=tutti()[S.i];delete S.testi[x.id];delete S.oggetti[x.id];return apri();}
+  if(b.dataset.rip){var x=tutti()[S.i];delete S.testi[x.id];delete S.oggetti[x.id];delete S.teste[x.id];delete S.piedi[x.id];delete S.btn[x.id];return apri();}
+  if(b.dataset.bta){var x2=tutti()[S.i];var l=bottoniDi(x2).map(function(q){return {t:q.t,tipo:q.tipo};});l.push({t:"",tipo:x2.tipo==="TEMPLATE"?"risposta":(l.length&&l[0].tipo==="link"?"link":"risposta")});S.btn[x2.id]=l;return apri();}
+  if(b.dataset.btx!==undefined){var x3=tutti()[S.i];var l3=bottoniDi(x3).map(function(q){return {t:q.t,tipo:q.tipo};});l3.splice(+b.dataset.btx,1);S.btn[x3.id]=l3;return apri();}
   if(b.dataset.salva){b.textContent="Salvato in questa pagina";disegnaFlusso();}
 });
 function tema(){try{var t=window.parent&&window.parent!==window?window.parent.document.documentElement.getAttribute("data-tema"):null;if(!t){t=new URLSearchParams(location.search).get("tema");}document.documentElement.setAttribute("data-tema",t==="chiaro"?"chiaro":"scuro");}catch(e){}}
