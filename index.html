@@ -141,7 +141,7 @@ function caricaCampagne(){
   fetch("https://pnxhthrheqeucoisifjw.supabase.co/functions/v1/regia-campagne").then(function(r){return r.json();}).then(function(j){
     if(!j.ok)throw new Error(j.errore);
     CAMPAGNE=j.campagne.map(function(c){var v=/piccolo o grande/i.test(c.nome);var a=ASS.filter(function(x){return x.camp===c.id;})[0];
-      return {id:c.id,nome:c.nome,stato:c.attiva?"attiva":(c.stato==="PAUSED"?"in pausa":String(c.stato||"").toLowerCase()),attiva:c.attiva,creata:(c.creata||"").slice(0,10),percorso:a?a.perc:null,img:v?IMG.camp:null,testo:v?V1.testo:"[testo dell'inserzione: da leggere da Facebook]",info:(v?V1.info+" · ":"")+(c.attiva?"attiva":"in pausa")+" su Facebook",dice:v?V1.dice:null};});
+      return {id:c.id,nome:c.nome,stato:c.attiva?"attiva":(c.stato==="PAUSED"?"in pausa":String(c.stato||"").toLowerCase()),attiva:c.attiva,creata:(c.creata||"").slice(0,10),percorso:a?a.perc:null,img:v?IMG.camp:(c.miniatura||null),modulo:c.modulo||null,annunci:c.annunci||0,testo:v?V1.testo:"[testo dell'inserzione: da leggere da Facebook]",info:(v?V1.info+" · ":"")+(c.attiva?"attiva":"in pausa")+" su Facebook",dice:v?V1.dice:null};});
     if(!ASS.length||ASS[0].camp==="_"){var v1=CAMPAGNE.filter(function(c){return /piccolo o grande/i.test(c.nome);})[0];ASS=v1?[{camp:v1.id,perc:"001",op:"Valentino"}]:[];if(v1)v1.percorso="001";}
     if(!CAMPAGNE.some(function(c){return c.id===S.camp;}))S.camp=(ASS[0]||{}).camp||CAMPAGNE[0].id;
     disegna();
@@ -203,13 +203,20 @@ function campagna(){return CAMPAGNE.filter(function(c){return c.id===S.camp;})[0
 function collegata(){return S.perc==="001";}
 function testoDi(x){return S.testi[x.id]!==undefined?S.testi[x.id]:(x.corpo||"");}
 function oggettoDi(x){return S.oggetti[x.id]!==undefined?S.oggetti[x.id]:(x.oggetto||"");}
-function nodoCamp(){var c=campagna();return {id:"0",tipo:"CAMPAGNA",nome:c.nome,annuncio:true,corpo:c.testo,perche:c.info,extra:c.dice?[{k:"Il video dice",v:c.dice},{k:"Domande del modulo",v:"Nome e cognome · Telefono · Mail · Provincia\nChe impianto le interessa? · Vuole la batteria? · Entro quando?"}]:[],img:c.img,grafica:true};}
+function nodoCamp(){var c=campagna();return {id:"0",tipo:"CAMPAGNA",nome:c.nome,annuncio:true,corpo:c.testo,perche:c.info,extra:(c.dice?[{k:"Il video dice",v:c.dice}]:[]).concat([{k:"Modulo",v:c.modulo&&c.modulo.domande?c.modulo.nome+"\n"+c.modulo.domande.map(function(q,i){return (i+1)+". "+q.testo+(q.opzioni&&q.opzioni.length?"\n   "+q.opzioni.join(" · "):"");}).join("\n"):(c.annunci?"Gli annunci non usano un modulo Facebook":"Nessun modulo: la campagna non ha ancora annunci")}]),img:c.img,grafica:true};}
 function tutti(){return [nodoCamp()].concat(collegata()?NODI:[]).concat([REGIA]);}
 
+function moduloHtml(c,piccolo){
+  var m=c&&c.modulo;
+  if(!m)return '<div style="font-size:'+(piccolo?10.5:13)+'px;color:#9a3412;line-height:1.35">'+(c&&c.id!=="_"?(c.annunci?"Gli annunci di questa campagna non usano un modulo Facebook.":"Nessun modulo: la campagna non ha ancora annunci."):"")+'</div>';
+  if(m.errore)return '<div style="font-size:11px;color:#9a3412">Modulo non leggibile: '+esc(m.errore)+'</div>';
+  var fs=piccolo?10.5:13.5;
+  return '<div style="font-size:'+(piccolo?10:12)+'px;font-weight:700;color:#54656f;text-transform:uppercase;letter-spacing:.05em">Modulo · '+esc(m.nome||"")+'</div>'+(m.domande||[]).map(function(q,i){return '<div style="font-size:'+fs+'px;line-height:1.35;margin-top:'+(piccolo?4:8)+'px"><b>'+(i+1)+'. '+esc(q.testo)+'</b>'+((q.opzioni&&q.opzioni.length)?'<div style="color:#3b4a54">'+q.opzioni.map(function(o){return "◦ "+esc(o);}).join("<br>")+'</div>':'<div style="color:#8a979f">risposta scritta dal cliente</div>')+'</div>';}).join("");
+}
 function disegnaCampagne(){
   $("fAttive").setAttribute("aria-pressed",S.filtro==="attive");$("fTutte").setAttribute("aria-pressed",S.filtro==="tutte");
   var l=CAMPAGNE.filter(function(c){return S.filtro==="tutte"||c.attiva||c.id===S.camp;});
-  $("campagne").innerHTML=l.map(function(c){return '<button class="camp" data-c="'+c.id+'" aria-pressed="'+(c.id===S.camp)+'"><span class="th">'+(c.img?'<img src="'+c.img+'" alt="">':'FB')+'</span><span style="min-width:0"><b>'+esc(c.nome)+'</b><span>'+esc(c.stato)+' · '+(c.percorso?'percorso '+c.percorso:'nessun percorso')+'</span></span></button>';}).join("");
+  $("campagne").innerHTML=l.map(function(c){return '<button class="camp" data-c="'+c.id+'" aria-pressed="'+(c.id===S.camp)+'"><span class="th">'+(c.img?'<img src="'+c.img+'" alt="">':'FB')+'</span><span style="min-width:0"><b>'+esc(c.nome)+'</b><span>'+esc(c.stato)+' · '+(c.modulo&&c.modulo.domande?c.modulo.domande.length+' domande':'senza modulo')+' · '+(c.percorso?'percorso '+c.percorso:'nessun percorso')+'</span></span></button>';}).join("");
   var sel=$("percorso");sel.innerHTML=PERCORSI.map(function(p){return '<option value="'+p.cod+'">'+p.cod+' · '+esc(p.nome)+'</option>';}).join("")+'<option value="">— nessun percorso</option>';
   sel.value=S.perc||"";
   $("statoPerc").textContent=collegata()?"collegato · attivo":"non collegato";
@@ -264,7 +271,7 @@ function disegnaFlusso(){
   } else {
     h+='<div class="vuoto"><b style="font-family:var(--display);font-size:20px;color:var(--ink)">Nessun percorso collegato</b><span>I contatti di questa campagna arrivano e si fermano qui: non parte nessun messaggio.</span><span>Scegli un percorso dal menu qui sopra per collegarlo.</span></div>';
   }
-  h+='<div class="nodo" style="left:30px;top:315px;border:2px solid #111b21"><button class="apri" data-i="0"><span class="testa"><span class="idx">0</span><span class="tipo" style="'+STILI.CAMPAGNA+'">CAMPAGNA</span></span><span class="mini" style="background:#dfe5ea">'+(c.img?'<img src="'+c.img+'" alt="" style="height:100%;object-fit:cover;object-position:center 70%">':'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#54656f;font-size:12px;font-weight:600">[grafica]</span>')+'</span><span class="nm" title="'+esc(c.nome)+'">'+esc(c.nome)+'</span><span class="k">'+esc(c.info)+'</span></button><button class="matita" data-m="0" aria-label="Modifica la campagna" title="Modifica">'+ICO_MATITA+'</button></div>';
+  h+='<div class="nodo" style="left:30px;top:30px;border:2px solid #111b21"><button class="apri" data-i="0" style="height:auto;max-height:840px;overflow-y:auto"><span class="testa"><span class="idx">0</span><span class="tipo" style="'+STILI.CAMPAGNA+'">CAMPAGNA</span></span><span class="mini" style="background:#dfe5ea">'+(c.img?'<img src="'+c.img+'" alt="" style="height:100%;object-fit:cover;object-position:center 70%">':'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#54656f;font-size:12px;font-weight:600">[grafica]</span>')+'</span><span class="nm" title="'+esc(c.nome)+'" style="white-space:normal">'+esc(c.nome)+'</span><span class="k">'+esc(c.stato||"")+'</span><span style="display:block;border-top:1px solid #e9edef;padding-top:6px;width:100%">'+moduloHtml(c,true)+'</span></button><button class="matita" data-m="0" aria-label="Modifica la campagna" title="Modifica">'+ICO_MATITA+'</button></div>';
   h+='<div class="nodo" style="left:2960px;top:315px;width:220px;border:2px solid #111b21"><button class="apri" data-i="'+(T.length-1)+'"><span class="testa"><span class="idx">R</span><span class="tipo" style="'+STILI.REGIA+'">REGIA</span></span><span class="mini" style="background:#111b21;color:#fff;padding:10px;font-size:12px;line-height:1.4;display:block">'+esc(String(testoDi(REGIA)).slice(0,130))+'</span><span class="nm">Istruzioni per il commerciale</span><span class="k">le legge prima di chiamare</span></button><button class="matita" data-m="'+(T.length-1)+'" aria-label="Modifica le istruzioni" title="Modifica">'+ICO_MATITA+'</button></div>';
   $("flusso").innerHTML=h;
 }
