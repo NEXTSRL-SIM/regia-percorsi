@@ -918,4 +918,8 @@ disegna();caricaCampagne();
   }
   monta(); setInterval(monta,1500);
 })();
+</script><script id="tema-msg">
+/* il tema arriva dal Portale con un messaggio quando la pagina madre sta su un altro indirizzo */
+window.addEventListener('message',function(e){ var d=e.data; if(d&&d.tipo==='tema'&&(d.tema==='chiaro'||d.tema==='scuro')){ window.TEMA_MADRE=d.tema; document.documentElement.setAttribute('data-tema',d.tema); } });
+setInterval(function(){ if(window.TEMA_MADRE&&document.documentElement.getAttribute('data-tema')!==window.TEMA_MADRE) document.documentElement.setAttribute('data-tema',window.TEMA_MADRE); },300);
 </script></body></html>
