@@ -192,14 +192,18 @@ td button:has(svg),[data-ichat],[data-isch],button.tel,.dxriapri,.dxchiudi{borde
 #zoomTela .za{width:auto;padding:0 12px;border-radius:999px!important;font:600 12px var(--sans);color:var(--amber)}
 </style>
 <style id="lati-css">
-/* PORTALE NEXT-110: le due colonne (Facebook·Instagram e Regia) si richiudono per allargare la tela */
+/* PORTALE NEXT-110: le due colonne (Facebook·Instagram e Regia) si fissano o si liberano con la puntina, come il menu generale */
 .tela{position:relative}
 .lato{scrollbar-width:none;-ms-overflow-style:none}.lato::-webkit-scrollbar{display:none;width:0;height:0}
-.lato{transition:width .18s ease,padding .18s ease}
-.lato.chiuso{width:46px!important;padding:14px 0!important;overflow:hidden!important;cursor:pointer;align-items:center}
-.lato.chiuso>*{display:none!important}
-.latoBtn{position:absolute;top:10px;z-index:6;width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#d5dde3);background:var(--surface,#fff);color:var(--ink-2,#54656f);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(16,24,40,.12);padding:0}
+.lato.chiuso{width:46px!important;padding:14px 0!important;overflow:hidden!important;align-items:center}
+.lato.chiuso:not(.largo)>*{display:none!important}
+.lato.chiuso.largo{width:340px!important;padding:14px!important;overflow:auto!important;position:relative;z-index:7;box-shadow:0 12px 36px rgba(16,24,40,.22);align-items:stretch}
+#latoSx.chiuso.largo{margin-right:-294px}
+#latoDx.chiuso.largo{margin-left:-294px}
+.latoBtn{position:absolute;top:10px;z-index:9;width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#d5dde3);background:#fff;color:#54656f;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(16,24,40,.12);padding:0}
+:root:not([data-tema="chiaro"]) .latoBtn{background:#1b2430;color:#cbd5e1;border-color:#334155}
 .latoBtn:hover{border-color:var(--amber,#0891B2);color:var(--amber,#0891B2)}
+.latoBtn[aria-pressed="true"]{color:var(--amber,#0891B2);border-color:var(--amber,#0891B2)}
 .latoBtn svg{width:15px;height:15px}
 .latoNome{position:absolute;top:50px;z-index:5;width:46px;display:none;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .latoNome i{writing-mode:vertical-rl;transform:rotate(180deg);font-style:normal;font-weight:600;font-size:12px;letter-spacing:.02em;font-family:Manrope,system-ui,sans-serif}
@@ -882,29 +886,33 @@ disegna();caricaCampagne();
 </script>
 <script id="lati-js">
 (function(){
-  var K='percorsi_lati_chiusi', st={};
+  var K='percorsi_lati_liberi', st={};
   try{ st=JSON.parse(localStorage.getItem(K)||'{}')||{}; }catch(e){}
   function salva(){ try{ localStorage.setItem(K,JSON.stringify(st)); }catch(e){} }
-  var ico={sx:['M15 18l-6-6 6-6','M9 18l6-6-6-6'],dx:['M9 18l6-6-6-6','M15 18l-6-6 6-6']};
-  function svg(d){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';}
+  var PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76V6h6v4.76l2.5 2.74v1.5h-11v-1.5z"/><path d="M8 3h8"/></svg>';
   function monta(){
     var tela=document.getElementById('tela'); if(!tela||tela.dataset.lati) return; tela.dataset.lati='1';
-    [['sx','latoSx','Facebook · Instagram','f','#1a4fa0'],['dx','latoDx','Regia','R','#111b21']].forEach(function(q){
+    [['sx','latoSx','Facebook · Instagram','#1a4fa0'],['dx','latoDx','Regia','#111b21']].forEach(function(q){
       var lato=document.getElementById(q[1]); if(!lato) return;
-      var b=document.createElement('button'); b.type='button'; b.className='latoBtn'; b.dataset.lato=q[0];
-      var n=document.createElement('div'); n.className='latoNome'; n.innerHTML='<i style="color:'+q[4]+'">'+q[2]+'</i>';
+      var b=document.createElement('button'); b.type='button'; b.className='latoBtn'; b.innerHTML=PIN;
+      var n=document.createElement('div'); n.className='latoNome'; n.innerHTML='<i style="color:'+q[3]+'">'+q[2]+'</i>';
       tela.appendChild(b); tela.appendChild(n);
+      var tm=null;
       function metti(){
-        var c=!!st[q[0]]; lato.classList.toggle('chiuso',c);
-        b.innerHTML=svg(ico[q[0]][c?1:0]);
-        b.title=(c?'Riapri ':'Richiudi ')+q[2]; b.setAttribute('aria-label',b.title);
-        var w=c?46:lato.offsetWidth;
-        if(q[0]==='sx'){ b.style.left=(c?8:w-40)+'px'; b.style.right=''; n.style.left='0'; n.style.right=''; }
-        else { b.style.right=(c?8:w-40)+'px'; b.style.left=''; n.style.right='0'; n.style.left=''; }
-        n.style.display=c?'flex':'none';
+        var lib=!!st[q[0]], largo=lato.classList.contains('largo');
+        lato.classList.toggle('chiuso',lib); if(!lib) lato.classList.remove('largo');
+        b.setAttribute('aria-pressed',!lib);
+        b.title=lib?'Fissa aperta '+q[2]:'Sblocca '+q[2]+': si richiude e si apre passandoci sopra'; b.setAttribute('aria-label',b.title);
+        var aperta=!lib||largo, w=aperta?(lib?340:lato.offsetWidth):46, x=aperta?w-40:8;
+        if(q[0]==='sx'){ b.style.left=x+'px'; b.style.right=''; n.style.left='0'; }
+        else { b.style.right=x+'px'; b.style.left=''; n.style.right='0'; }
+        n.style.display=(lib&&!largo)?'flex':'none';
       }
-      b.onclick=function(e){ e.stopPropagation(); st[q[0]]=!st[q[0]]; salva(); metti(); setTimeout(metti,200); };
-      lato.addEventListener('click',function(){ if(st[q[0]]){ st[q[0]]=false; salva(); metti(); setTimeout(metti,200);} });
+      function entra(){ clearTimeout(tm); if(st[q[0]]&&!lato.classList.contains('largo')){ lato.classList.add('largo'); metti(); } }
+      function esce(){ clearTimeout(tm); tm=setTimeout(function(){ if(lato.classList.contains('largo')){ lato.classList.remove('largo'); metti(); } },250); }
+      lato.addEventListener('mouseenter',entra); lato.addEventListener('mouseleave',esce);
+      b.addEventListener('mouseenter',function(){ if(lato.classList.contains('largo')) clearTimeout(tm); }); b.addEventListener('mouseleave',esce);
+      b.onclick=function(e){ e.stopPropagation(); st[q[0]]=!st[q[0]]; lato.classList.remove('largo'); salva(); metti(); setTimeout(metti,50); };
       metti(); window.addEventListener('resize',metti);
     });
   }
