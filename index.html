@@ -184,6 +184,12 @@ td button:has(svg),[data-ichat],[data-isch],button.tel,.dxriapri,.dxchiudi{borde
 .tv-testa{cursor:move;user-select:none}
 .tavolozza.mosso{right:auto!important;bottom:auto!important}
 .tavolozza.mosso:not(.ridotta){height:min(560px,calc(100% - 20px))}
+
+#zoomTela{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line-2);box-shadow:0 8px 24px rgba(16,24,40,.18);font-family:var(--sans)}
+#zoomTela button{width:30px;height:30px;border-radius:50%!important;border:0;background:transparent;color:var(--ink);font:700 16px var(--sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+#zoomTela button:hover{background:var(--surface-3)}
+#zoomTela .zv{width:auto;min-width:54px;padding:0 8px;border-radius:999px!important;font:600 12px var(--sans)}
+#zoomTela .za{width:auto;padding:0 12px;border-radius:999px!important;font:600 12px var(--sans);color:var(--amber)}
 </style>
 </head><body>
 <div class="foglio">
@@ -441,7 +447,7 @@ function disegnaFlusso(){
 }
 
 /* ---------- trascinare i nodi e collegare le porte ---------- */
-function posTela(e){var r=$("flusso").getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+function posTela(e){var r=$("flusso").getBoundingClientRect();return [(e.clientX-r.left)/(window.ZOOM||1),(e.clientY-r.top)/(window.ZOOM||1)];}
 $("flusso").addEventListener("pointerdown",function(e){
   var po=e.target.closest(".porta[data-pn]");
   if(po){e.preventDefault();e.stopPropagation();var n=nodo(po.dataset.pn);S.con={da:n.id,p:po.dataset.pp,o:pt(n,po.dataset.pp)};return;}
@@ -449,7 +455,7 @@ $("flusso").addEventListener("pointerdown",function(e){
   if(nd&&!e.target.closest(".matita,.cestino,.aggiungi")){var n2=nodo(nd.dataset.n);if(n2)S.drag={id:n2.id,sx:e.clientX,sy:e.clientY,ox:n2.x,oy:n2.y,mosso:false,el:nd};}
 });
 document.addEventListener("pointermove",function(e){
-  if(S.drag){var d=S.drag,dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(!d.mosso&&Math.abs(dx)+Math.abs(dy)<5)return;d.mosso=true;var n=nodo(d.id);n.x=Math.max(0,Math.round((d.ox+dx)/10)*10);n.y=Math.max(0,Math.round((d.oy+dy)/10)*10);d.el.style.left=n.x+"px";d.el.style.top=n.y+"px";disegnaArchi();}
+  if(S.drag){var d=S.drag,dx=(e.clientX-d.sx)/(window.ZOOM||1),dy=(e.clientY-d.sy)/(window.ZOOM||1);if(!d.mosso&&Math.abs(dx)+Math.abs(dy)<5)return;d.mosso=true;var n=nodo(d.id);n.x=Math.max(0,Math.round((d.ox+dx)/10)*10);n.y=Math.max(0,Math.round((d.oy+dy)/10)*10);d.el.style.left=n.x+"px";d.el.style.top=n.y+"px";disegnaArchi();}
   else if(S.con){var p=posTela(e),o=S.con.o,t=$("tmp");if(t)t.setAttribute("d",curva(o,p,S.con.p==="giu").d);}
 });
 document.addEventListener("pointerup",function(e){
@@ -829,6 +835,37 @@ disegna();caricaCampagne();
     h.addEventListener('pointerup',function(){ if(!d) return; d=null; try{ localStorage.setItem('tv_pos',JSON.stringify({x:tv.offsetLeft,y:tv.offsetTop})); }catch(e){} });
   }
   prendi(); new MutationObserver(prendi).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<script id="zoom-tela">
+/* PORTALE NEXT-110: zoom della tela del percorso (pulsanti in basso, oppure Ctrl + rotella) */
+(function(){
+  window.ZOOM=1;
+  function f(){return document.getElementById('flusso');}
+  function c(){return document.getElementById('centro');}
+  function applica(z,keep){
+    var fl=f(), ce=c(); if(!fl||!ce) return;
+    z=Math.max(0.25,Math.min(2,Math.round(z*100)/100));
+    var cx=ce.scrollLeft+ce.clientWidth/2, cy=ce.scrollTop+ce.clientHeight/2, vz=window.ZOOM;
+    window.ZOOM=z; fl.style.zoom=z;
+    if(keep!==false){ ce.scrollLeft=cx*z/vz-ce.clientWidth/2; ce.scrollTop=cy*z/vz-ce.clientHeight/2; }
+    var v=document.querySelector('#zoomTela .zv'); if(v) v.textContent=Math.round(z*100)+'%';
+    try{localStorage.setItem('tela_zoom',z)}catch(e){}
+  }
+  function adatta(){ var fl=f(), ce=c(); if(!fl||!ce) return; var w=parseFloat(fl.style.width)||fl.scrollWidth, h=parseFloat(fl.style.height)||fl.scrollHeight; applica(Math.min(ce.clientWidth/w, ce.clientHeight/h)*0.98,false); ce.scrollLeft=0; ce.scrollTop=0; }
+  function metti(){
+    if(document.getElementById('zoomTela')||!f()) return;
+    var b=document.createElement('div'); b.id='zoomTela';
+    b.innerHTML='<button type="button" data-z="-" title="Riduci">−</button><button type="button" class="zv" data-z="1" title="Torna al 100%">100%</button><button type="button" data-z="+" title="Ingrandisci">+</button><button type="button" class="za" data-z="fit" title="Tutto il percorso nello schermo">Adatta</button>';
+    document.body.appendChild(b);
+    b.addEventListener('click',function(e){ var k=e.target.closest('[data-z]'); if(!k) return; var z=k.getAttribute('data-z');
+      if(z==='+') applica(window.ZOOM*1.2); else if(z==='-') applica(window.ZOOM/1.2); else if(z==='1') applica(1); else adatta(); });
+    c().addEventListener('wheel',function(e){ if(!e.ctrlKey&&!e.metaKey) return; e.preventDefault(); applica(window.ZOOM*(e.deltaY<0?1.1:1/1.1)); },{passive:false});
+    var s=parseFloat((function(){try{return localStorage.getItem('tela_zoom')}catch(e){return null}})()); if(s) applica(s,false);
+    vis();
+  }
+  function vis(){ var b=document.getElementById('zoomTela'), d=document.getElementById('vDett'); if(b&&d) b.style.display=d.classList.contains('nascosto')?'none':'flex'; }
+  metti(); new MutationObserver(function(){ metti(); vis(); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 })();
 </script>
 </body></html>
