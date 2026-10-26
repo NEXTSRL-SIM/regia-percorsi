@@ -239,10 +239,10 @@ var CHIUSA="Preferisce WhatsApp? Le abbiamo scritto anche lì dal numero 0421 17
 var NW=200,NH=208,BH=36,AGG=28;
 function X(k){return 290+280*k;}
 var YA=40,YB=360,YM=700,YM2=1010,YWM=1350;
-var BANDE=[{t:0,h:640,c:"#e9f6ee",lab:"Corsia WhatsApp",col:"#0f6b3a"},{t:650,h:640,c:"#e9f1fa",lab:"Corsia mail",col:"#1a5b94"},{t:1300,h:330,c:"#e9f6ee",lab:"WhatsApp che parte insieme alla mail",col:"#0f6b3a"}];
+var BANDE=[{t:0,h:648,c:"#e9f6ee",lab:"Corsia WhatsApp",col:"#0f6b3a"},{t:650,h:648,c:"#e9f1fa",lab:"Corsia mail",col:"#1a5b94"},{t:1300,h:340,c:"#e9f6ee",lab:"WhatsApp che parte insieme alla mail",col:"#0f6b3a"}];
 var LARGO=3920,ALTO=1640;
 // tre colonne: Facebook e Instagram a sinistra, il percorso al centro, la regia a destra
-var COLONNE=[{l:0,w:262,c:"#e8eefb",lab:"Facebook · Instagram",col:"#1a4fa0"},{l:3330,w:330,c:"#ececf1",lab:"Regia",col:"#111b21"}];
+var COLONNE=[{l:0,w:268,c:"#e8eefb",lab:"Facebook · Instagram",col:"#1a4fa0"},{l:3330,w:330,c:"#ececf1",lab:"Regia",col:"#111b21"}];
 function bt(t,tipo){return {t:t,tipo:tipo};}
 var BASE={nodi:[
  {id:"0",tipo:"CAMPAGNA",x:30,y:60},
@@ -373,8 +373,8 @@ function cartaCamp(n){var c=campagna();
   return '<div class="nodo'+(S.sel==="0"?" sel":"")+'" data-n="0" style="left:'+n.x+'px;top:'+n.y+'px;width:'+NW+'px;border:2px solid #111b21"><button class="apri" data-apri="0" style="height:auto;max-height:520px;overflow-y:auto;gap:5px"><span class="testa"><span class="idx">0</span><span class="tipo" style="'+STILI.CAMPAGNA+'">CAMPAGNA</span></span><span class="mini" style="background:#dfe5ea">'+(c.img?'<img src="'+c.img+'" alt="" style="height:100%;object-fit:cover;object-position:center 70%">':'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#54656f;font-size:12px;font-weight:600">[grafica]</span>')+'</span><span class="nm" title="'+esc(c.nome)+'" style="white-space:normal">'+esc(c.nome)+'</span><span class="k">'+esc(c.stato||"")+'</span><span style="display:block;border-top:1px solid #e9edef;padding-top:6px;width:100%">'+moduloHtml(c,true)+'</span></button><button class="matita" data-mod="0" aria-label="Modifica la campagna" title="Modifica">'+ICO_MATITA+'</button>'+(collegata()?'<span class="porta auto" data-pn="0" data-pp="auto" title="Uscita automatica"></span>':'')+'</div>';}
 
 function disegnaFlusso(){
-  var f=$("flusso");f.style.width=LARGO+"px";f.style.height=ALTO+"px";
-  var h=COLONNE.map(function(c){return '<div class="banda" style="top:0;height:'+(ALTO-10)+'px;left:'+c.l+'px;width:'+c.w+'px;background:'+c.c+'"></div><div class="lab" style="top:12px;left:'+(c.l+16)+'px;color:'+c.col+'">'+esc(c.lab)+'</div>';}).join("")+BANDE.map(function(b){return '<div class="banda" style="top:'+b.t+'px;height:'+b.h+'px;background:'+b.c+';left:270px;width:3050px"></div><div class="lab" style="top:'+(b.t+8)+'px;left:290px;color:'+b.col+'">'+esc(b.lab)+'</div>';}).join("");
+  var f=$("flusso");f.style.width=LARGO+"px";f.style.height=ALTO+"px";f.style.background="linear-gradient(90deg,#d5dde3 3660px,transparent 3660px)";
+  var h=COLONNE.map(function(c){return '<div class="banda" style="top:0;height:'+ALTO+'px;left:'+c.l+'px;width:'+c.w+'px;background:'+c.c+'"></div><div class="lab" style="top:12px;left:'+(c.l+16)+'px;color:'+c.col+'">'+esc(c.lab)+'</div>';}).join("")+BANDE.map(function(b){return '<div class="banda" style="top:'+b.t+'px;height:'+b.h+'px;background:'+b.c+';left:270px;width:3058px"></div><div class="lab" style="top:'+(b.t+8)+'px;left:290px;color:'+b.col+'">'+esc(b.lab)+'</div>';}).join("");
   if(!collegata()){f.innerHTML=h+'<div class="vuoto"><b style="font-family:var(--display);font-size:20px;color:var(--ink)">Nessun percorso collegato</b><span>I contatti di questa campagna arrivano e si fermano qui: non parte nessun messaggio.</span><span>Scegli un percorso dal menu qui sopra per collegarlo.</span></div>'+cartaCamp(nodo("0"));return;}
   h+='<svg id="archi" aria-hidden="true" width="'+LARGO+'" height="'+ALTO+'" style="position:absolute;left:0;top:0;overflow:visible"></svg><div id="enote"></div>';
   h+=G.nodi.map(carta).join("");
