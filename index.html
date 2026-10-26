@@ -153,7 +153,39 @@ textarea{flex:1;min-height:220px;resize:none}
 .ancora .porta.auto,.ancora .porta.ingresso{top:calc(50% - 7px)}
 
 .nodo img{pointer-events:none;-webkit-user-drag:none}
-</style></head><body>
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style id="ardesia">/* ===== VESTE ARDESIA (PORTALE NEXT-110, 26/10) — solo grafica ===== */
+/* Veste Ardesia sopra le pagine vere: stessi elementi, stessi posti */
+:root{--display:"Manrope",system-ui,sans-serif!important;--sans:"Manrope",system-ui,sans-serif!important;--mono:"Manrope",system-ui,sans-serif!important}
+:root[data-tema="chiaro"]{--ground:#F2F4F7;--surface:#FFFFFF;--surface-2:#F8FAFC;--line:#E2E7EE;--line-2:#D5DCE5;--titolo:#111827;--ink:#111827;--ink-2:#3F4A5A;--ink-3:#6B7686;--amber:#0891B2;--amber-dim:#0891B2;--amber-wash:#E0F4F9}
+body{font-family:"Manrope",system-ui,sans-serif!important;font-size:13px}
+h1{font-family:"Manrope",sans-serif!important;font-weight:800!important;letter-spacing:-.02em!important;font-size:20px!important}
+h2,h3{font-family:"Manrope",sans-serif!important;letter-spacing:-.01em!important}
+.occhio{font-family:"Manrope",sans-serif!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important}
+button,select,input,textarea,.bott,.tasto,.chip,.per,.st{font-family:"Manrope",sans-serif!important;letter-spacing:0!important;text-transform:none!important}
+.bott,.tasto,.per,button.chip,.chip{font-size:12px!important;font-weight:600!important;border-radius:8px!important;min-height:32px}
+.bott.forte,.tasto.forte{background:#0891B2!important;border-color:#0891B2!important;color:#fff!important}
+select,input,textarea{border-radius:8px!important}
+th,.et,.leg,.conta,.l-dati,.quando,.sotto span,.titolo span,.cron-sub{font-family:"Manrope",sans-serif!important}
+th,.et{font-size:10px!important;letter-spacing:.12em!important;text-transform:uppercase!important;font-weight:800!important}
+.st{font-size:12.5px!important;font-weight:600!important}
+.grosso,time,.l-dati b,.orologio{font-family:"JetBrains Mono",monospace!important}
+
+/* tondi: icone di riga (chat, chiama, scheda) e pulsanti a pillola */
+td button:has(svg),[data-ichat],[data-isch],button.tel,.dxriapri,.dxchiudi{border-radius:50%!important}
+.chip,.imbuto,.per,.piu{border-radius:999px!important}
+.cesiti,div:has(> [data-cvista]),.cnts{border-radius:10px!important;overflow:hidden}
+.cesiti button,div:has(> [data-cvista]) button{border-radius:0!important}
+/* Percorsi: la tavolozza degli oggetti diventa un riquadro mobile */
+.tavolozza{border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(16,24,40,.18)!important}
+.tv-testa{cursor:move;user-select:none}
+
+.tavolozza{border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(16,24,40,.18)!important}
+.tv-testa{cursor:move;user-select:none}
+.tavolozza.mosso{right:auto!important;bottom:auto!important}
+.tavolozza.mosso:not(.ridotta){height:min(560px,calc(100% - 20px))}
+</style>
+</head><body>
 <div class="foglio">
   <h1>Percorsi</h1>
   <p class="occhio">La strada di ogni campagna, dal primo messaggio alla regia · versione di prova: quello che cambi si salva in questa pagina, sul tuo computer</p>
@@ -780,4 +812,23 @@ $("latoSx").addEventListener("click",function(e){var b=e.target.closest("[data-a
 [$("latoSx"),$("latoDx")].forEach(function(el){el.addEventListener("click",function(e){var b=e.target.closest("[data-apri]");if(!b)return;S.prova=false;S.pg=0;S.sel=b.dataset.apri;S.mod=false;apri();});});
 
 disegna();caricaCampagne();
-</script></body></html>
+</script><script id="ardesia-js">
+/* PORTALE NEXT-110: la tavolozza degli oggetti si sposta trascinandola dalla testata e ricorda dove sta;
+   il tema chiaro/scuro segue quello della regia che apre questa pagina */
+(function(){
+  function tema(){ try{ var t=window.parent.document.documentElement.getAttribute('data-tema'); if(t) document.documentElement.setAttribute('data-tema',t); else document.documentElement.removeAttribute('data-tema'); }catch(e){} }
+  tema(); setInterval(tema,1000);
+  function prendi(){
+    var tv=document.getElementById('tavolozza'); if(!tv||tv.dataset.mobile) return; tv.dataset.mobile='1';
+    var h=tv.querySelector('.tv-testa'); if(!h) return;
+    function metti(x,y){ tv.classList.add('mosso'); tv.style.left=Math.max(0,x)+'px'; tv.style.top=Math.max(0,y)+'px'; }
+    try{ var p=JSON.parse(localStorage.getItem('tv_pos')||'null'); if(p) metti(p.x,p.y); }catch(e){}
+    var d=null;
+    h.addEventListener('pointerdown',function(e){ if(e.target.closest('button')) return; d={x:e.clientX,y:e.clientY,l:tv.offsetLeft,t:tv.offsetTop}; h.setPointerCapture(e.pointerId); e.preventDefault(); });
+    h.addEventListener('pointermove',function(e){ if(d) metti(d.l+e.clientX-d.x,d.t+e.clientY-d.y); });
+    h.addEventListener('pointerup',function(){ if(!d) return; d=null; try{ localStorage.setItem('tv_pos',JSON.stringify({x:tv.offsetLeft,y:tv.offsetTop})); }catch(e){} });
+  }
+  prendi(); new MutationObserver(prendi).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+</body></html>
