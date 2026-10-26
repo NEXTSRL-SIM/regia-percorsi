@@ -171,7 +171,7 @@ textarea{flex:1;min-height:220px;resize:none}
   <div class="riga">
     <span class="et">Campagne</span>
     <button class="chip" id="fAttive" aria-pressed="false">attive su Facebook</button>
-    <button class="chip" id="fTutte" aria-pressed="true">tutte</button>
+    <button class="chip" id="fTutte" aria-pressed="true">tutte</button><button class="chip" id="bNuoveFb" title="Chiede a Facebook solo le campagne che non abbiamo ancora">↻ cerca campagne nuove su Facebook</button>
   </div>
   <div class="campagne" id="campagne"></div>
   <div class="riga" style="margin-top:4px">
@@ -209,15 +209,18 @@ function copia(o){return JSON.parse(JSON.stringify(o));}
 var V1={info:"Video di Valentino, 37 secondi · Facebook e Instagram",testo:"[testo dell'inserzione: da leggere da Facebook]",
   dice:"«Le hanno preventivato sei chilowatt, con un accumulo da dieci? Aspetti... prima di firmare.»\n«Meglio dodici moduli oppure venti?»\n«Da dodici a venti moduli: con la promozione Next il prezzo non cambia. E vale anche con l'accumulo da sedici.»"};
 var CAMPAGNE=[{id:"_",nome:"carico le campagne da Facebook…",stato:"",attiva:false,percorso:null,img:null,testo:"",info:""}];
-function caricaCampagne(){
-  fetch("https://pnxhthrheqeucoisifjw.supabase.co/functions/v1/regia-campagne").then(function(r){return r.json();}).then(function(j){
-    if(!j.ok)throw new Error(j.errore);
+// Facebook si chiama solo a richiesta (Sante 26/10 11:20): di norma la regia legge la copia salvata
+var AVVISO_FB="",ATTESA_FB="";
+function caricaCampagne(q){
+  if(q){ATTESA_FB=q.indexOf("nuove")>=0?"Cerco le campagne nuove su Facebook…":"Rileggo la campagna da Facebook…";disegnaLati();disegnaCampagne();}
+  fetch("https://pnxhthrheqeucoisifjw.supabase.co/functions/v1/regia-campagne"+(q||"")).then(function(r){return r.json();}).then(function(j){
+    ATTESA_FB="";if(!j.ok)throw new Error(j.errore);AVVISO_FB=j.avviso||"";
     CAMPAGNE=j.campagne.map(function(c){var v=/piccolo o grande/i.test(c.nome);var a=ASS.filter(function(x){return x.camp===c.id;})[0];
-      return {id:c.id,nome:c.nome,stato:c.attiva?"attiva":(c.stato==="PAUSED"?"in pausa":String(c.stato||"").toLowerCase()),attiva:c.attiva,creata:(c.creata||"").slice(0,10),percorso:a?a.perc:null,img:v?IMG.camp:(c.miniatura||null),modulo:c.modulo||null,annunci:c.annunci||0,testo:v?V1.testo:"[testo dell'inserzione: da leggere da Facebook]",info:(v?V1.info+" · ":"")+(c.attiva?"attiva":"in pausa")+" su Facebook",dice:v?V1.dice:null};});
+      return {letta:c.letta_at||"",id:c.id,nome:c.nome,stato:c.attiva?"attiva":(c.stato==="PAUSED"?"in pausa":String(c.stato||"").toLowerCase()),attiva:c.attiva,creata:(c.creata||"").slice(0,10),percorso:a?a.perc:null,img:v?IMG.camp:(c.miniatura||null),modulo:c.modulo||null,annunci:c.annunci||0,testo:v?V1.testo:"[testo dell'inserzione: da leggere da Facebook]",info:(v?V1.info+" · ":"")+(c.attiva?"attiva":"in pausa")+" su Facebook",dice:v?V1.dice:null};});
     if(!ASS.length||ASS[0].camp==="_"){var v1=CAMPAGNE.filter(function(c){return /piccolo o grande/i.test(c.nome);})[0];ASS=v1?[{camp:v1.id,perc:"001",op:"Valentino"}]:[];if(v1)v1.percorso="001";}
     if(!CAMPAGNE.some(function(c){return c.id===S.camp;}))S.camp=(ASS[0]||{}).camp||CAMPAGNE[0].id;
     disegna();
-  }).catch(function(e){CAMPAGNE=[{id:"_",nome:"Facebook non risponde: "+String(e.message||e),stato:"",attiva:false,percorso:null,img:null,testo:"",info:""}];disegna();});
+  }).catch(function(e){ATTESA_FB="";if(CAMPAGNE.length&&CAMPAGNE[0].id!=="_"){AVVISO_FB="Non riesco a leggere: "+String(e.message||e);disegna();return;}CAMPAGNE=[{id:"_",nome:"Facebook non risponde: "+String(e.message||e),stato:"",attiva:false,percorso:null,img:null,testo:"",info:""}];disegna();});
 }
 var PERCORSI=[{cod:"001",nome:"FB-PROMO-NOV",stato:"attivo",conoscenza:"Promo novembre: video «Piccolo o grande?», 30 case, offerta A o B, fino al 30 novembre"}];
 var OPERATORI=["Valentino","Roberto Polotto","Alessandro Belloni"];
@@ -533,11 +536,13 @@ function disegnaCampagne(){
   var sel=$("percorso");sel.innerHTML=PERCORSI.map(function(p){return '<option value="'+p.cod+'">'+p.cod+' · '+esc(p.nome)+'</option>';}).join("")+'<option value="">— nessun percorso</option>';
   sel.value=S.perc||"";
   $("statoPerc").textContent=collegata()?"collegato · attivo":"non collegato";
+  var bn=$("bNuoveFb");if(bn)bn.disabled=!!ATTESA_FB;
   $("bProva").disabled=!collegata();
 }
 $("campagne").addEventListener("click",function(e){var b=e.target.closest("[data-c]");if(!b)return;S.camp=b.dataset.c;S.perc=campagna().percorso||"";disegna();});
 $("fAttive").onclick=function(){S.filtro="attive";disegna();};
 $("fTutte").onclick=function(){S.filtro="tutte";disegna();};
+$("bNuoveFb").onclick=function(){caricaCampagne("?nuove=1");};
 $("percorso").onchange=function(){S.perc=this.value;disegna();};
 // la prova segue la corsia WhatsApp: dove c'è un'uscita automatica la prende, se no il primo pulsante
 function sequenza(){var out=[],vis={},cur="0";
@@ -753,7 +758,7 @@ var REGOLE=[["finti","Numeri finti o incompleti","sequenze come 3333333 o 123456
 function disegnaLati(){
   var c=campagna(),F=G.filtro||copia(FILTRO_BASE),h='';
   h+='<div class="ltit" style="color:#1a4fa0">Facebook · Instagram</div>';
-  h+='<div class="lcard"><div class="lmedia">'+(c.img?'<img src="'+c.img+'" alt="La grafica della campagna">':'<span>[grafica della campagna]</span>')+'</div><b style="font-size:16px;line-height:1.25;display:block;margin-top:10px">'+esc(c.nome)+'</b><div style="font-size:12.5px;color:#54656f;margin-top:2px">'+esc(c.stato||"")+(c.creata?' · creata il '+esc(c.creata):'')+'</div>'+(c.dice?'<div style="font-size:12.5px;line-height:1.45;margin-top:10px;white-space:pre-line;color:#3b4a54"><b style="color:#111b21">Il video dice</b><br>'+esc(c.dice)+'</div>':'')+'<button class="nav" data-apri="0" style="margin-top:10px;min-height:36px">Vedi l\'inserzione, telefono e computer ›</button></div>';
+  h+='<div class="lcard"><div class="lmedia">'+(c.img?'<img src="'+c.img+'" alt="La grafica della campagna">':'<span>[grafica della campagna]</span>')+'</div><b style="font-size:16px;line-height:1.25;display:block;margin-top:10px">'+esc(c.nome)+'</b><div style="font-size:12.5px;color:#54656f;margin-top:2px">'+esc(c.stato||"")+(c.creata?' · creata il '+esc(c.creata):'')+'</div>'+(c.dice?'<div style="font-size:12.5px;line-height:1.45;margin-top:10px;white-space:pre-line;color:#3b4a54"><b style="color:#111b21">Il video dice</b><br>'+esc(c.dice)+'</div>':'')+'<button class="nav" data-apri="0" style="margin-top:10px;min-height:36px">Vedi l\'inserzione, telefono e computer ›</button>'+(c.id!=="_"?'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;border-top:1px solid #e9edef;padding-top:10px"><button class="nav" data-aggfb="'+esc(c.id)+'" style="min-height:34px;padding:0 12px"'+(ATTESA_FB?" disabled":"")+'>↻ Aggiorna da Facebook</button><span style="font-size:11.5px;color:#54656f">'+esc(ATTESA_FB||(c.letta?"letta il "+new Date(c.letta).toLocaleString("it-IT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""))+'</span></div>':'')+(AVVISO_FB?'<div style="font-size:12px;color:#9a3412;margin-top:8px">'+esc(AVVISO_FB)+'</div>':'')+'</div>';
   h+='<div class="lcard">'+moduloHtml(c,false)+'</div>';
   h+='<div class="ltit" style="color:#1a4fa0;margin-top:6px">Filtro dei contatti <span class="lchip">da attivare</span></div>';
   h+='<div class="lcard"><div style="font-size:12.5px;color:#3b4a54;line-height:1.45;margin-bottom:8px">Tra il modulo e il primo messaggio. Il percorso parte solo per i contatti buoni. Nessun contatto si cancella.</div>';
@@ -771,6 +776,7 @@ $("latoSx").addEventListener("change",function(e){var t=e.target;if(t.dataset.fi
 $("latoSx").addEventListener("input",function(e){if(e.target.id==="fElenco"){G.filtro=G.filtro||copia(FILTRO_BASE);G.filtro.elenco=e.target.value;salva();}});
 $("latoDx").addEventListener("change",function(e){var t=e.target;if(t.dataset.vend){var R=nodo("R"),v=t.dataset.vend,l=(R.venditori||[]).filter(function(x){return x!==v;});if(t.checked)l.push(v);R.venditori=l;var a=ASS.filter(function(x){return x.camp===S.camp;})[0];if(a&&l[0])a.op=l[0];salva();disegnaFlusso();}});
 $("latoDx").addEventListener("input",function(e){if(e.target.id==="rConosc"){nodo("R").corpo=e.target.value;salva();}});
+$("latoSx").addEventListener("click",function(e){var b=e.target.closest("[data-aggfb]");if(b)caricaCampagne("?aggiorna="+b.dataset.aggfb);});
 [$("latoSx"),$("latoDx")].forEach(function(el){el.addEventListener("click",function(e){var b=e.target.closest("[data-apri]");if(!b)return;S.prova=false;S.pg=0;S.sel=b.dataset.apri;S.mod=false;apri();});});
 
 disegna();caricaCampagne();
