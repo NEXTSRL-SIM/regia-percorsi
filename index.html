@@ -191,7 +191,18 @@ td button:has(svg),[data-ichat],[data-isch],button.tel,.dxriapri,.dxchiudi{borde
 #zoomTela .zv{width:auto;min-width:54px;padding:0 8px;border-radius:999px!important;font:600 12px var(--sans)}
 #zoomTela .za{width:auto;padding:0 12px;border-radius:999px!important;font:600 12px var(--sans);color:var(--amber)}
 </style>
-</head><body>
+<style id="lati-css">
+/* PORTALE NEXT-110: le due colonne (Facebook·Instagram e Regia) si richiudono per allargare la tela */
+.tela{position:relative}
+.lato{transition:width .18s ease,padding .18s ease}
+.lato.chiuso{width:46px!important;padding:14px 0!important;overflow:hidden!important;cursor:pointer;align-items:center}
+.lato.chiuso>*{display:none!important}
+.latoBtn{position:absolute;top:10px;z-index:6;width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#d5dde3);background:var(--surface,#fff);color:var(--ink-2,#54656f);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(16,24,40,.12);padding:0}
+.latoBtn:hover{border-color:var(--amber,#0891B2);color:var(--amber,#0891B2)}
+.latoBtn svg{width:15px;height:15px}
+.latoNome{position:absolute;top:50px;z-index:5;width:46px;display:none;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.latoNome i{writing-mode:vertical-rl;transform:rotate(180deg);font-style:normal;font-weight:600;font-size:12px;letter-spacing:.02em;font-family:Manrope,system-ui,sans-serif}
+</style></head><body>
 <div class="foglio">
   <h1>Percorsi</h1>
   <p class="occhio">La strada di ogni campagna, dal primo messaggio alla regia · versione di prova: quello che cambi si salva in questa pagina, sul tuo computer</p>
@@ -868,4 +879,34 @@ disegna();caricaCampagne();
   metti(); new MutationObserver(function(){ metti(); vis(); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 })();
 </script>
-</body></html>
+<script id="lati-js">
+(function(){
+  var K='percorsi_lati_chiusi', st={};
+  try{ st=JSON.parse(localStorage.getItem(K)||'{}')||{}; }catch(e){}
+  function salva(){ try{ localStorage.setItem(K,JSON.stringify(st)); }catch(e){} }
+  var ico={sx:['M15 18l-6-6 6-6','M9 18l6-6-6-6'],dx:['M9 18l6-6-6-6','M15 18l-6-6 6-6']};
+  function svg(d){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';}
+  function monta(){
+    var tela=document.getElementById('tela'); if(!tela||tela.dataset.lati) return; tela.dataset.lati='1';
+    [['sx','latoSx','Facebook · Instagram','f','#1a4fa0'],['dx','latoDx','Regia','R','#111b21']].forEach(function(q){
+      var lato=document.getElementById(q[1]); if(!lato) return;
+      var b=document.createElement('button'); b.type='button'; b.className='latoBtn'; b.dataset.lato=q[0];
+      var n=document.createElement('div'); n.className='latoNome'; n.innerHTML='<i style="color:'+q[4]+'">'+q[2]+'</i>';
+      tela.appendChild(b); tela.appendChild(n);
+      function metti(){
+        var c=!!st[q[0]]; lato.classList.toggle('chiuso',c);
+        b.innerHTML=svg(ico[q[0]][c?1:0]);
+        b.title=(c?'Riapri ':'Richiudi ')+q[2]; b.setAttribute('aria-label',b.title);
+        var w=c?46:lato.offsetWidth;
+        if(q[0]==='sx'){ b.style.left=(c?8:w-40)+'px'; b.style.right=''; n.style.left='0'; n.style.right=''; }
+        else { b.style.right=(c?8:w-40)+'px'; b.style.left=''; n.style.right='0'; n.style.left=''; }
+        n.style.display=c?'flex':'none';
+      }
+      b.onclick=function(e){ e.stopPropagation(); st[q[0]]=!st[q[0]]; salva(); metti(); setTimeout(metti,200); };
+      lato.addEventListener('click',function(){ if(st[q[0]]){ st[q[0]]=false; salva(); metti(); setTimeout(metti,200);} });
+      metti(); window.addEventListener('resize',metti);
+    });
+  }
+  monta(); setInterval(monta,1500);
+})();
+</script></body></html>
